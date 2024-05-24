@@ -4,8 +4,10 @@ package com.example.elearning.service.impl;
 import com.example.elearning.dto.CourseDto;
 import com.example.elearning.exception.CustomException;
 import com.example.elearning.model.Course;
+import com.example.elearning.model.Users;
 import com.example.elearning.repository.CourseRepository;
 import com.example.elearning.service.CourseService;
+import com.example.elearning.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -30,6 +32,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Value("${course.file.path.img}")
     private String filePath;
+
+    @Autowired
+    UserService iUserService;
 
     public CourseDto save(Course entity, CourseDto dto) throws IOException {
         entity.setVoided(dto.isVoided());
@@ -115,4 +120,12 @@ public class CourseServiceImpl implements CourseService {
         return page;
     }
 
+    @Override
+    public List<CourseDto> getAllMyCourseDto () throws CustomException {
+        Users users = iUserService.getCurrentUser();
+        if (users == null || users.getId() == null) {
+            throw new CustomException("User not found");
+        }
+        return courseRepository.getCourseByUser(users.getId());
+    }
 }

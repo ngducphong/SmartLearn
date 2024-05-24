@@ -65,5 +65,12 @@ public class CourseController {
         return ResponseEntity.ok(ret);
     }
 
+    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @GetMapping("/get-my-course")
+    public ResponseEntity<List<CourseDto>> getAllMyCourseDto() throws CustomException {
+        List<CourseDto> ret = courseService.getAllMyCourseDto();
+        return ResponseEntity.ok(ret);
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package com.example.elearning.service.impl;
 
 
+import com.example.elearning.dto.CourseDto;
 import com.example.elearning.dto.UserCourseDto;
 import com.example.elearning.exception.CustomException;
 import com.example.elearning.model.Course;
@@ -8,6 +9,8 @@ import com.example.elearning.model.UserCourse;
 import com.example.elearning.model.Users;
 import com.example.elearning.repository.CourseRepository;
 import com.example.elearning.repository.UserCourseRepository;
+import com.example.elearning.repository.UserRepository;
+import com.example.elearning.service.CourseService;
 import com.example.elearning.service.UserCourseService;
 import com.example.elearning.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,10 @@ public class UserCourseServiceImpl implements UserCourseService {
     CourseRepository courseRepository;
     @Autowired
     UserService userService;
+    @Autowired
+    private CourseService courseService;
+    @Autowired
+    UserRepository userRepository;
 
     public UserCourseDto save(UserCourse entity, UserCourseDto dto, Boolean isUpdate) throws CustomException {
         entity.setVoided(dto.isVoided());
@@ -51,6 +58,19 @@ public class UserCourseServiceImpl implements UserCourseService {
         UserCourse userCourse = new UserCourse();
 
         Users users = userService.getCurrentUser();
+        userCourse.setUsers(users);
+
+        return this.save(userCourse, dto, false);
+    }
+    @Override
+    public UserCourseDto saveUserCourseByUsernameAndCourseId(Long courseId, String username) throws CustomException {
+        UserCourse userCourse = new UserCourse();
+        UserCourseDto dto = new UserCourseDto();
+
+        CourseDto courseDto = courseService.getCourseDtoById(courseId);
+        dto.setCourseDto(courseDto);
+
+        Users users = userRepository.findUsersByUsername(username).orElseThrow(() -> new CustomException("UserCourse not found"));
         userCourse.setUsers(users);
 
         return this.save(userCourse, dto, false);

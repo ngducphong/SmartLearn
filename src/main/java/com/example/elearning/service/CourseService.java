@@ -22,6 +22,6 @@ public interface CourseService {
 
     Page<CourseDto> pagingCourseDto(Pageable pageable, String title,String home);
 
-
+    List<CourseDto> getAllMyCourseDto () throws CustomException;
 
 }

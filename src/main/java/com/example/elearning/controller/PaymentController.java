@@ -29,24 +29,8 @@ public class PaymentController {
 
 
     @PostMapping("/create-payment")
-    public ResponseEntity<?> createPayment(HttpServletRequest request, @RequestBody UserCourseDto dto) throws CustomException, UnsupportedEncodingException {
+    public ResponseEntity<?> createPayment(HttpServletRequest request, @RequestBody UserCourseDto dto) throws Exception {
         return paymentService.createPayment(request, dto);
     }
 
-    @GetMapping("/payment-info")
-    public ResponseEntity<?> transaction(HttpServletRequest request) throws CustomException {
-
-        int paymentStatus = paymentService.orderReturn(request);
-
-        PaymentResDto paymentResDto = new PaymentResDto();
-        if (paymentStatus == 1) {
-            paymentResDto.setStatus("Ok");
-            paymentResDto.setMessage("Successfully");
-
-        } else {
-            paymentResDto.setStatus("Failed");
-            paymentResDto.setMessage("Failed");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(paymentResDto);
-    }
 }

@@ -45,7 +45,9 @@ public class PaymentInfoDTO extends BaseObjectDto {
         }
     }
 
-    public PaymentInfoDTO(String vnp_Amount, String vnp_BankCode, String vnp_BankTranNo, String vnp_CardType, String vnp_OrderInfo, String vnp_PayDate, String vnp_ResponseCode, String vnp_TmnCode, String vnp_TransactionNo, String vnp_TransactionStatus, String vnp_TxnRef, String vnp_SecureHash) {
+    public PaymentInfoDTO(String vnp_Amount, String vnp_BankCode, String vnp_BankTranNo, String vnp_CardType
+            , String vnp_OrderInfo, String vnp_PayDate, String vnp_ResponseCode, String vnp_TmnCode
+            , String vnp_TransactionNo, String vnp_TransactionStatus, String vnp_TxnRef, String vnp_SecureHash) {
         this.vnp_Amount = vnp_Amount;
         this.vnp_BankCode = vnp_BankCode;
         this.vnp_BankTranNo = vnp_BankTranNo;

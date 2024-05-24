@@ -8,6 +8,8 @@ import com.example.elearning.model.PaymentInFo;
 import com.example.elearning.model.Users;
 import com.example.elearning.repository.PaymentInFoRepository;
 import com.example.elearning.repository.UserCourseRepository;
+import com.example.elearning.repository.UserRepository;
+import com.example.elearning.security.jwt.JwtProvider;
 import com.example.elearning.service.CourseService;
 import com.example.elearning.service.PaymentService;
 import com.example.elearning.service.UserCourseService;
@@ -18,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -37,9 +41,12 @@ public class PaymentServiceImpl implements PaymentService {
     UserCourseRepository userCourseRepository;
     @Autowired
     PaymentInFoRepository paymentInFoRepository;
+    @Autowired
+    JwtProvider jwtProvider;
+    @Autowired
+    UserRepository userRepository;
 
-
-    public ResponseEntity<?> createPayment(HttpServletRequest request, UserCourseDto dto) throws CustomException, UnsupportedEncodingException {
+    public ResponseEntity<?> createPayment(HttpServletRequest request, UserCourseDto dto) throws Exception {
         if (dto == null || dto.getCourseDto() == null || dto.getCourseDto().getId() == null)
             throw new CustomException("UserCourseDto is not null");
 
@@ -75,7 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnp_Params.put("vnp_BankCode", "NCB");
 
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", users.getUsername() + "/" + courseDto.getId());
+        vnp_Params.put("vnp_OrderInfo", this.encrypt(this.getTokenFromRequest(request) + "/" + courseDto.getId(), ConfigVNPay.secretKey));
         vnp_Params.put("vnp_OrderType", ConfigVNPay.orderType);
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", ConfigVNPay.vnp_ReturnUrl);
@@ -129,13 +136,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public PaymentInfoDTO savePaymentInfo(PaymentInfoDTO paymentInfoDTO) {
+    public PaymentInfoDTO savePaymentInfo(PaymentInfoDTO paymentInfoDTO, Users users) {
         PaymentInFo paymentInFo = new PaymentInFo();
         paymentInFo.setVnp_Amount(paymentInfoDTO.getVnp_Amount());
         paymentInFo.setVnp_BankCode(paymentInfoDTO.getVnp_BankCode());
         paymentInFo.setVnp_BankTranNo(paymentInfoDTO.getVnp_BankTranNo());
         paymentInFo.setVnp_CardType(paymentInfoDTO.getVnp_CardType());
-        paymentInFo.setVnp_OrderInfo(paymentInfoDTO.getVnp_OrderInfo());
+        paymentInFo.setVnp_OrderInfo(users.getUsername());
         paymentInFo.setVnp_PayDate(paymentInfoDTO.getVnp_PayDate());
         paymentInFo.setVnp_ResponseCode(paymentInfoDTO.getVnp_ResponseCode());
         paymentInFo.setVnp_TmnCode(paymentInfoDTO.getVnp_TmnCode());
@@ -144,25 +151,22 @@ public class PaymentServiceImpl implements PaymentService {
         paymentInFo.setVnp_TxnRef(paymentInfoDTO.getVnp_TxnRef());
         paymentInFo.setVnp_SecureHash(paymentInfoDTO.getVnp_SecureHash());
 
-        Users users = userService.getCurrentUser();
         paymentInFo.setUsers(users);
         paymentInFo = paymentInFoRepository.save(paymentInFo);
         return new PaymentInfoDTO(paymentInFo);
     }
 
     @Override
-    public void transaction(Long courseId, String vnp_SecureHash) throws CustomException {
+    public void transaction(Long courseId, String username, String vnp_SecureHash) throws CustomException {
         if (!paymentInFoRepository.getPaymentInfoByVnp_SecureHash(vnp_SecureHash).isEmpty()) {
             throw new CustomException("vnp_SecureHash exists");
         }
-        CourseDto courseDto = courseService.getCourseDtoById(courseId);
-        UserCourseDto userCourseDto = new UserCourseDto();
-        userCourseDto.setCourseDto(courseDto);
-        userCourseService.saveUserCourse(userCourseDto);
+
+        userCourseService.saveUserCourseByUsernameAndCourseId(courseId, username);
     }
 
     @Override
-    public int orderReturn(HttpServletRequest request) throws CustomException {
+    public int orderReturn(HttpServletRequest request) throws Exception {
         Map fields = new HashMap();
         for (Enumeration params = request.getParameterNames(); params.hasMoreElements(); ) {
             String fieldName = null;
@@ -193,15 +197,14 @@ public class PaymentServiceImpl implements PaymentService {
                 if (vnp_OrderInfo == null || vnp_OrderInfo.isEmpty())
                     throw new CustomException("course Id OR username is null");
 
-                String[] parts = vnp_OrderInfo.split("/");
-                String username = parts[0];
+                String tokenAndCourseId = this.decrypt(vnp_OrderInfo, ConfigVNPay.secretKey);
+                String[] parts = tokenAndCourseId.split("/");
+                String token = parts[0];
                 String courseId = parts[1];
 
-                Users users = userService.getCurrentUser();
-                if(!Objects.equals(users.getUsername(), username)){
-                    throw new CustomException("username is not match");
-                }
-                this.transaction(Long.valueOf(courseId), vnp_SecureHash);
+                String username = jwtProvider.getUsernameFromToken(token);
+
+                this.transaction(Long.valueOf(courseId), username, vnp_SecureHash);
 
                 String amount = request.getParameter("vnp_Amount");
                 String bankCode = request.getParameter("vnp_BankCode");
@@ -216,10 +219,12 @@ public class PaymentServiceImpl implements PaymentService {
                 String txnRef = request.getParameter("vnp_TxnRef");
                 String secureHash = request.getParameter("vnp_SecureHash");
 
+                Users users = userRepository.findUsersByUsername(username).orElseThrow(() -> new CustomException("UserCourse not found"));
+
                 PaymentInfoDTO paymentInfoDTO = new PaymentInfoDTO(amount, bankCode, bankTranNo, cardType, orderInfo,
                         payDate, responseCode, tmnCode, transactionNo, transactionStatus, txnRef, secureHash);
 
-                this.savePaymentInfo(paymentInfoDTO);
+                this.savePaymentInfo(paymentInfoDTO, users);
 
                 return 1;
             } else {
@@ -228,5 +233,32 @@ public class PaymentServiceImpl implements PaymentService {
         } else {
             return -1;
         }
+    }
+
+    private String getTokenFromRequest(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
+    }
+
+    public static String encrypt(String data, String key) throws Exception {
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
+
+    public static String decrypt(String encryptedData, String key) throws Exception {
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+        byte[] decodedBytes = Base64.getDecoder().decode(encryptedData);
+        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+        return new String(decryptedBytes);
     }
 }
