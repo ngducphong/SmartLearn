@@ -18,4 +18,8 @@ public interface UserCourseRepository  extends JpaRepository<UserCourse,Long> {
     @Query("select new com.example.elearning.dto.UserCourseDto(e, true) from UserCourse e " +
             " where e.users.id = :usersId and e.course.id = :courseId")
     List<UserCourseDto> getByUsersIdAndCourseId(Long usersId, Long courseId);
+
+    @Query("select e from UserCourse e " +
+            " where e.users.id = :usersId and e.course.id = :courseId")
+    List<UserCourse> getByUsersAndCourse(Long usersId, Long courseId);
 }

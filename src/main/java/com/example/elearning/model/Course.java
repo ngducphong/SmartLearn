@@ -22,6 +22,10 @@ public class Course extends BaseObject {
 	private String description;
 	private String subDescription;
 
+	@ManyToOne
+	@JoinColumn(name = "category_id")
+	private Category category;
+
 	@OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<Chapter> chapters = new HashSet<>();
 

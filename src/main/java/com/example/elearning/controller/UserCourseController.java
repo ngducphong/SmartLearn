@@ -33,10 +33,10 @@ public class UserCourseController {
         return ResponseEntity.ok(ret);
     }
 
-    @PutMapping("/favourite/{id}")
-    public ResponseEntity<Boolean> favourite(@PathVariable Long id) throws CustomException, IOException {
+    @PutMapping("/favourite/{courseId}")
+    public ResponseEntity<Boolean> favourite(@PathVariable Long courseId) throws CustomException, IOException {
 
-        Boolean ret = userCourseService.favourite(id);
+        Boolean ret = userCourseService.favourite(courseId);
         return ResponseEntity.ok(ret);
     }
 

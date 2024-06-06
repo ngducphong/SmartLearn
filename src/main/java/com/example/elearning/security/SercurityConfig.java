@@ -54,7 +54,8 @@ public class SercurityConfig {
                 .authenticationProvider(this.authenticationProvider())
                 .authorizeHttpRequests((auth) ->
                         auth.requestMatchers("/auth/**","/public/**","/api/v1/user/register","/api/v1/user-clipboard"
-                                        ,"/img/**", "/api/v1/course/paging", "/api/payment/payment-info").permitAll()
+                                        ,"/img/**", "/api/v1/course/paging", "/api/payment/payment-info",
+                                        "/api/v1/course/paging-course-most-registered","/api/v1/course/paging-course-favourite" ).permitAll()
                                 .anyRequest().authenticated())
                 .exceptionHandling((auth) ->
                         auth.authenticationEntryPoint(jwtEntryPoint)

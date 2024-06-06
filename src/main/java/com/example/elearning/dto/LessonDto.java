@@ -5,6 +5,7 @@ import com.example.elearning.dto.base.BaseObjectDto;
 import com.example.elearning.model.Lesson;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Getter
@@ -17,6 +18,7 @@ public class LessonDto  extends BaseObjectDto {
     private ChapterDto chapterDto;
     private Long chapterId;
     private String document;
+    private MultipartFile videoFile;
 
     public LessonDto() {
     }

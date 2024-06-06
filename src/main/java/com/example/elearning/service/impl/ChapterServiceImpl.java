@@ -28,7 +28,7 @@ public class ChapterServiceImpl implements ChapterService {
 
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
-
+        entity.setVoided(dto.isVoided());
         if (dto.getCourse() == null || dto.getCourse().getId() == null) {
             throw new CustomException("Course is not null");
         }

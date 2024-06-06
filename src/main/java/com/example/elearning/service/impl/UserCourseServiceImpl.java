@@ -84,7 +84,16 @@ public class UserCourseServiceImpl implements UserCourseService {
 
     @Override
     public Boolean favourite(Long id) throws CustomException, IOException {
-        UserCourse userCourse = userCourseRepository.findById(id).orElseThrow(() -> new CustomException("UserCourse not found"));
+//        UserCourse userCourse = userCourseRepository.findById(id).orElseThrow(() -> new CustomException("UserCourse not found"));
+
+        if(id == null){
+            throw new CustomException("CourseId is not null");
+        }
+        Users users = userService.getCurrentUser();
+        UserCourse userCourse = userCourseRepository.getByUsersAndCourse(users.getId(), id).get(0);
+        if(userCourse == null){
+            throw new CustomException("UserCourse not found");
+        }
         if (userCourse.getIsFavourite() == null || userCourse.getIsFavourite() == false) {
             userCourse.setIsFavourite(true);
         } else {

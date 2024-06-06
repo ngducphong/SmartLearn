@@ -12,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,13 +25,14 @@ public class LessonController {
 
     @Secured({"ROLE_ADMIN"})
     @PostMapping("/save")
-    public ResponseEntity<LessonDto> save(@RequestBody LessonDto request) throws CustomException {
+    public ResponseEntity<LessonDto> save(@ModelAttribute LessonDto request) throws CustomException {
         LessonDto ret = lessonService.saveLesson(request);
         return ResponseEntity.ok(ret);
     }
+
     @Secured({"ROLE_ADMIN"})
     @PutMapping("/update/{id}")
-    public ResponseEntity<LessonDto> update(@RequestBody LessonDto request, @PathVariable Long id) throws CustomException {
+    public ResponseEntity<LessonDto> update(@ModelAttribute LessonDto request, @PathVariable Long id) throws CustomException {
         LessonDto ret = lessonService.upDateLesson(request, id);
         return ResponseEntity.ok(ret);
     }

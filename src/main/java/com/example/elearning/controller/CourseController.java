@@ -26,7 +26,7 @@ public class CourseController {
 
     @Secured({"ROLE_ADMIN"})
     @PostMapping("/save")
-    public ResponseEntity<CourseDto> save(@ModelAttribute CourseDto request) throws IOException {
+    public ResponseEntity<CourseDto> save(@ModelAttribute CourseDto request) throws IOException, CustomException {
         CourseDto ret = courseService.saveCourse(request);
         return ResponseEntity.ok(ret);
     }
@@ -63,14 +63,24 @@ public class CourseController {
     public ResponseEntity<CourseDto> get(@PathVariable("id") Long id) throws CustomException {
         CourseDto ret = courseService.getCourseDtoById(id);
         return ResponseEntity.ok(ret);
+
     }
 
     @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/get-my-course")
-    public ResponseEntity<List<CourseDto>> getAllMyCourseDto() throws CustomException {
-        List<CourseDto> ret = courseService.getAllMyCourseDto();
+    public ResponseEntity<Page<CourseDto>> getAllMyCourseDto(@PageableDefault(page = 0, size = 20) Pageable pageable, @RequestParam(required = false) String title) throws CustomException {
+        Page<CourseDto> ret = courseService.getAllMyCourseDto(pageable, title);
+        return ResponseEntity.ok(ret);
+    }
+    @GetMapping("/paging-course-most-registered")
+    public ResponseEntity<Page<CourseDto>> pagingCourseMostRegistered(@PageableDefault(page = 0, size = 20) Pageable pageable) {
+        Page<CourseDto> ret = courseService.pagingCourseMostRegistered(pageable);
         return ResponseEntity.ok(ret);
     }
 
-
+    @GetMapping("/paging-course-favourite")
+    public ResponseEntity<Page<CourseDto>> pagingCourseFavourite(@PageableDefault(page = 0, size = 20) Pageable pageable) {
+        Page<CourseDto> ret = courseService.pagingCourseFavourite(pageable);
+        return ResponseEntity.ok(ret);
+    }
 }

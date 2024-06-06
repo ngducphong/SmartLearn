@@ -11,7 +11,8 @@ import java.util.List;
 
 public interface CourseService {
 
-    CourseDto saveCourse(CourseDto dto) throws IOException;
+    CourseDto saveCourse(CourseDto dto) throws IOException, CustomException;
+
     CourseDto upDateCourse(CourseDto dto, Long id) throws CustomException, IOException;
 
     void deleteCourse(Long id) throws CustomException;
@@ -20,8 +21,12 @@ public interface CourseService {
 
     CourseDto getCourseDtoById(Long id) throws CustomException;
 
-    Page<CourseDto> pagingCourseDto(Pageable pageable, String title,String home);
+    Page<CourseDto> pagingCourseDto(Pageable pageable, String title, String home);
 
-    List<CourseDto> getAllMyCourseDto () throws CustomException;
+    Page<CourseDto> pagingCourseMostRegistered(Pageable pageable);
+
+    Page<CourseDto> pagingCourseFavourite(Pageable pageable);
+
+    Page<CourseDto> getAllMyCourseDto(Pageable pageable, String title) throws CustomException;
 
 }

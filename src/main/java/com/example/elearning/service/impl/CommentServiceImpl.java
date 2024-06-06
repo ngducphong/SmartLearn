@@ -37,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
             throw new CustomException("User not found");
         }
         entity.setUsers(users);
-
+        entity.setVoided(dto.isVoided());
         entity.setContent(dto.getContent());
 
         if (dto.getLesson() == null || dto.getLesson().getId() == null) {
