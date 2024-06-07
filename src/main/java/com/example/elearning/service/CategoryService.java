@@ -20,6 +20,7 @@ public interface CategoryService {
     List<CategoryDto> getAllCategory();
 
     CategoryDto getCategoryDtoById(Long id) throws CustomException;
+    CategoryDto getCategoryByCourseId(Long id) throws CustomException;
 
     Page<CategoryDto> pagingCategoryDto(Pageable pageable, String name);
 

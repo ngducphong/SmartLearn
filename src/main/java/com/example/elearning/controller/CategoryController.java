@@ -59,5 +59,10 @@ public class CategoryController {
         CategoryDto ret = categoryService.getCategoryDtoById(id);
         return ResponseEntity.ok(ret);
     }
+    @GetMapping("/get-category-by-course/{courseId}")
+    public ResponseEntity<CategoryDto> getCategoryByCourseId(@PathVariable("courseId") Long id) throws CustomException {
+        CategoryDto ret = categoryService.getCategoryByCourseId(id);
+        return ResponseEntity.ok(ret);
+    }
 
 }

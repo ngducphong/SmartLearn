@@ -5,8 +5,10 @@ import com.example.elearning.dto.CategoryDto;
 import com.example.elearning.exception.CustomException;
 import com.example.elearning.model.Chapter;
 import com.example.elearning.model.Category;
+import com.example.elearning.model.Course;
 import com.example.elearning.repository.ChapterRepository;
 import com.example.elearning.repository.CategoryRepository;
+import com.example.elearning.repository.CourseRepository;
 import com.example.elearning.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +22,8 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
     CategoryRepository categoryRepository;
+    @Autowired
+    CourseRepository courseRepository;
 
     public CategoryDto save(Category entity, CategoryDto dto) throws CustomException {
         entity.setVoided(dto.isVoided());
@@ -61,6 +65,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto getCategoryDtoById(Long id) throws CustomException {
         return new CategoryDto(this.getCategoryById(id));
+    }
+
+    @Override
+    public CategoryDto getCategoryByCourseId(Long id) throws CustomException {
+        Course course = courseRepository.findById(id).orElseThrow(() -> new CustomException("Course not found"));
+        return new CategoryDto(categoryRepository.findById(course.getCategory().getId()).orElseThrow(() -> new CustomException("Category not found")));
     }
 
     @Override
