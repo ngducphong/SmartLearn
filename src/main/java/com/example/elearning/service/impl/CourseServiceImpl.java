@@ -178,7 +178,7 @@ public class CourseServiceImpl implements CourseService {
             dto.setTotalFavourite((Long) objects[objects.length - 1]); // Tổng số yêu thích chưa được cung cấp trong truy vấn gốc
         }
         if(isLogin){
-            Integer a = (Integer) objects[objects.length - 1];
+            Long a = (Long) objects[objects.length - 1];
             dto.setIsRegister(a == 1);
         }
         return dto;

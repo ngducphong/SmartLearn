@@ -81,19 +81,22 @@ public class LessonDto  extends BaseObjectDto {
     }
 
     public String getVideo() throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        // Khởi tạo khóa bí mật
-        SecretKeySpec secretKeySpec = new SecretKeySpec(keyVideo.getBytes(), "AES");
+        if(video != null){
+            // Khởi tạo khóa bí mật
+            SecretKeySpec secretKeySpec = new SecretKeySpec(keyVideo.getBytes(), "AES");
 
-        // Tạo đối tượng Cipher
-        Cipher cipher = Cipher.getInstance("AES");
+            // Tạo đối tượng Cipher
+            Cipher cipher = Cipher.getInstance("AES");
 
-        // Khởi tạo Cipher ở chế độ mã hóa
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            // Khởi tạo Cipher ở chế độ mã hóa
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 
-        // Mã hóa chuỗi
-        byte[] encryptedBytes = cipher.doFinal(video.getBytes());
+            // Mã hóa chuỗi
+            byte[] encryptedBytes = cipher.doFinal(video.getBytes());
 
-        return Base64.getEncoder().encodeToString(encryptedBytes);
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        }
+        return video;
     }
 
     public void setVideo(String video) {

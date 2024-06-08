@@ -34,7 +34,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "    e.sub_description, \n" +
             "    0, \n" +
             "    0 ,  \n" +
-            "    res.id is not null  \n" +
+            "    cast((res.id is not null) as signed)  \n" +
             " from course e left join ( select e2.id, u.user_id as user_id from course e2 left join user_course u on e2.id = u.course_id where u.user_id = :idUser )" +
             " res on e.id = res.id" +
             " where (e.voided is null or e.voided = false) " +
