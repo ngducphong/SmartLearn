@@ -20,6 +20,7 @@ public interface CourseService {
     List<CourseDto> getAllCourse();
 
     CourseDto getCourseDtoById(Long id) throws CustomException;
+    CourseDto getFullCourse(Long id) throws CustomException;
 
     Page<CourseDto> pagingCourseDto(Pageable pageable, String title, String home);
 

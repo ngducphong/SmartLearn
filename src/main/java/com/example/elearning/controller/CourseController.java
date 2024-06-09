@@ -67,6 +67,14 @@ public class CourseController {
     }
 
     @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @GetMapping("/getFullCourse/{id}")
+    public ResponseEntity<CourseDto> getFullCourse(@PathVariable("id") Long id) throws CustomException {
+        CourseDto ret = courseService.getFullCourse(id);
+        return ResponseEntity.ok(ret);
+
+    }
+
+    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/get-my-course")
     public ResponseEntity<Page<CourseDto>> getAllMyCourseDto(@PageableDefault(page = 0, size = 20) Pageable pageable, @RequestParam(required = false) String title) throws CustomException {
         Page<CourseDto> ret = courseService.getAllMyCourseDto(pageable, title);

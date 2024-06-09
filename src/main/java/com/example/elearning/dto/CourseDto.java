@@ -18,6 +18,7 @@ public class CourseDto extends BaseObjectDto {
     private MultipartFile imageFile;
     private String subDescription;
     private Long totalChapter;
+    private Long totalLesson;
     private Long totalFavourite;
     private Long totalUser;
     private Boolean isRegister;

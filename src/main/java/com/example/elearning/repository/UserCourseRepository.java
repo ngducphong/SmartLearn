@@ -22,4 +22,9 @@ public interface UserCourseRepository  extends JpaRepository<UserCourse,Long> {
     @Query("select e from UserCourse e " +
             " where e.users.id = :usersId and e.course.id = :courseId")
     List<UserCourse> getByUsersAndCourse(Long usersId, Long courseId);
+
+    @Query("select count(e) from UserCourse e " +
+            " where e.course.id = :courseId " +
+            " and (:isFavourite is false or e.isFavourite = true ) ")
+    Long countUserCourseByCourseId(Long courseId, Boolean isFavourite);
 }

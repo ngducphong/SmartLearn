@@ -23,4 +23,8 @@ public interface ChapterRepository extends JpaRepository<Chapter,Long> {
     @Query("select new com.example.elearning.dto.ChapterDto(e, true) from Chapter e"
             + " Where ( e.course.id = :courseId )")
     List<ChapterDto> getChaptersByCourseId(Long courseId);
+
+    @Query("select count(e) from Chapter e "
+            + "  Where  e.course.id = :courseId")
+    Long countChapterByCourseId(Long courseId);
 }

@@ -7,8 +7,7 @@ import com.example.elearning.model.Category;
 import com.example.elearning.model.Chapter;
 import com.example.elearning.model.Course;
 import com.example.elearning.model.Users;
-import com.example.elearning.repository.CategoryRepository;
-import com.example.elearning.repository.CourseRepository;
+import com.example.elearning.repository.*;
 import com.example.elearning.security.user_principal.UserPrincipal;
 import com.example.elearning.service.CourseService;
 import com.example.elearning.service.UserService;
@@ -42,6 +41,12 @@ public class CourseServiceImpl implements CourseService {
     CourseRepository courseRepository;
     @Autowired
     CategoryRepository categoryRepository;
+    @Autowired
+    LessonRepository lessonRepository;
+    @Autowired
+    UserCourseRepository userCourseRepository;
+    @Autowired
+    ChapterRepository chapterRepository;
 
     @Value("${course.file.path.img}")
     private String filePath;
@@ -51,11 +56,11 @@ public class CourseServiceImpl implements CourseService {
 
     public CourseDto save(Course entity, CourseDto dto) throws IOException, CustomException {
 
-        if(dto.getCategoryId() == null){
+        if (dto.getCategoryId() == null) {
             throw new CustomException("CategoryId is not null");
         }
         Category category = categoryRepository.findById(Long.valueOf(dto.getCategoryId())).orElse(null);
-        if (category == null){
+        if (category == null) {
             throw new CustomException("Category is null");
         }
         entity.setCategory(category);
@@ -69,6 +74,7 @@ public class CourseServiceImpl implements CourseService {
         entity = courseRepository.save(entity);
         return new CourseDto(entity);
     }
+
     // upload file img
     private Course uploadFileImg(CourseDto dto, Course entity) throws IOException {
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
@@ -95,6 +101,7 @@ public class CourseServiceImpl implements CourseService {
         result = result.replaceAll("\\s+", "");
         return result;
     }
+
     @Override
     public CourseDto saveCourse(CourseDto dto) throws IOException, CustomException {
         Course course = new Course();
@@ -110,10 +117,10 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void deleteCourse(Long id) throws CustomException {
-        Course course = courseRepository.findById(id).orElseThrow(() -> new CustomException("Course not found") );
-        if(course.getVoided() == null || course.getVoided() == false){
+        Course course = courseRepository.findById(id).orElseThrow(() -> new CustomException("Course not found"));
+        if (course.getVoided() == null || course.getVoided() == false) {
             course.setVoided(true);
-        }else {
+        } else {
             course.setVoided(false);
         }
         courseRepository.save(course);
@@ -129,6 +136,16 @@ public class CourseServiceImpl implements CourseService {
         return new CourseDto(this.getCourseById(id));
     }
 
+    @Override
+    public CourseDto getFullCourse(Long id) throws CustomException {
+        CourseDto courseDto = new CourseDto(this.getCourseById(id));
+        courseDto.setTotalChapter(chapterRepository.countChapterByCourseId(id));
+        courseDto.setTotalLesson(lessonRepository.countLessonByCourseId(id));
+        courseDto.setTotalUser(userCourseRepository.countUserCourseByCourseId(id, false));
+        courseDto.setTotalFavourite(userCourseRepository.countUserCourseByCourseId(id, true));
+        return courseDto;
+    }
+
     private Course getCourseById(Long id) throws CustomException {
         Optional<Course> optional = courseRepository.findById(id);
         if (optional.isPresent()) {
@@ -138,7 +155,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Page<CourseDto> pagingCourseDto(Pageable pageable, String title,String home) {
+    public Page<CourseDto> pagingCourseDto(Pageable pageable, String title, String home) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -154,11 +171,13 @@ public class CourseServiceImpl implements CourseService {
         Page<Object[]> results = courseRepository.getCourseMostRegistered(pageable);
         return results.map(result -> convertToCourseDto(result, false, false));
     }
+
     @Override
     public Page<CourseDto> pagingCourseFavourite(Pageable pageable) {
         Page<Object[]> results = courseRepository.getCourseFavourite(pageable);
         return results.map(result -> convertToCourseDto(result, true, false));
     }
+
     private CourseDto convertToCourseDto(Object[] objects, Boolean isFavourite, Boolean isLogin) {
         CourseDto dto = new CourseDto();
         dto.setId((Long) objects[0]); // Giả sử id là phần tử đầu tiên
@@ -174,10 +193,10 @@ public class CourseServiceImpl implements CourseService {
         dto.setSubDescription((String) objects[10]); // Giả sử subDescription là phần tử thứ mười một
         dto.setTotalChapter((Long) objects[12]); // sumChapter là phần tử cuối cùng
         dto.setTotalUser((Long) objects[11]); // sumUserCourse là phần tử áp chót
-        if(isFavourite){
+        if (isFavourite) {
             dto.setTotalFavourite((Long) objects[objects.length - 1]); // Tổng số yêu thích chưa được cung cấp trong truy vấn gốc
         }
-        if(isLogin){
+        if (isLogin) {
             Long a = (Long) objects[objects.length - 1];
             dto.setIsRegister(a == 1);
         }
@@ -185,7 +204,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Page<CourseDto> getAllMyCourseDto (Pageable pageable, String title) throws CustomException {
+    public Page<CourseDto> getAllMyCourseDto(Pageable pageable, String title) throws CustomException {
         Users users = iUserService.getCurrentUser();
         if (users == null || users.getId() == null) {
             throw new CustomException("User not found");
