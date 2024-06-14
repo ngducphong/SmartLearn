@@ -27,4 +27,8 @@ public interface UserCourseRepository  extends JpaRepository<UserCourse,Long> {
             " where e.course.id = :courseId " +
             " and (:isFavourite is false or e.isFavourite = true ) ")
     Long countUserCourseByCourseId(Long courseId, Boolean isFavourite);
+
+    @Query("select e.course.id from UserCourse e " +
+            " where e.users.id = :usersId ")
+    List<Long> getListCourseIdByUsersId(Long usersId);
 }

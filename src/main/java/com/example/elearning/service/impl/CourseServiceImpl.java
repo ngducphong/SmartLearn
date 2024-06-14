@@ -147,6 +147,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private Course getCourseById(Long id) throws CustomException {
+        if(!this.checkRegisterCourse(id)){
+            throw new CustomException("The course has not been registered");
+        }
         Optional<Course> optional = courseRepository.findById(id);
         if (optional.isPresent()) {
             return optional.get();
@@ -210,5 +213,11 @@ public class CourseServiceImpl implements CourseService {
             throw new CustomException("User not found");
         }
         return courseRepository.getCourseByUser(pageable, users.getId(), title);
+    }
+    private Boolean checkRegisterCourse(Long courseId) {
+        Users users = iUserService.getCurrentUser();
+        // get list courseId by userId
+        List<Long> courseIds = userCourseRepository.getListCourseIdByUsersId(users.getId());
+        return courseIds.contains(courseId);
     }
 }

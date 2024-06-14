@@ -38,4 +38,13 @@ public interface UserRepository extends JpaRepository<Users,Long> {
 
 //    @Query("select u.favourite from Users u where u.id = :userId")
 //    Page<Course> getWistListByUserId(Long userId, Pageable pageable);
+
+        // @Query("select u.roleName from user_role u " +
+        //     "WHERE (LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%')) OR :name = '' OR :name is null ) " +
+        //     "AND (u.phone = :phone OR :phone = '' or :phone is null) " +
+        //     "AND (u.username = :username OR :username = '' or :username is null) " +
+        //     "AND (u.email = :email OR :email = '' or :email is null) " +
+        //     "")
+        // List<String> getNameRolesByUserId(Long userId);
+
 }

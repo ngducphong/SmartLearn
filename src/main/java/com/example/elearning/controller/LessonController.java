@@ -42,12 +42,14 @@ public class LessonController {
         lessonService.deleteLesson(id);
     }
 
+    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/get-all")
     public ResponseEntity<List<LessonDto>> getAll() {
         List<LessonDto> ret = lessonService.getAllLesson();
         return ResponseEntity.ok(ret);
     }
 
+    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/paging")
     public ResponseEntity<Page<LessonDto>> paging(@PageableDefault(page = 0, size = 2,sort = "id",direction = Sort.Direction.DESC) Pageable pageable
             , @RequestParam(required = false) String title) {
@@ -55,6 +57,7 @@ public class LessonController {
         return ResponseEntity.ok(ret);
     }
 
+    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/{id}")
     public ResponseEntity<LessonDto> get(@PathVariable("id") Long id) throws CustomException {
         LessonDto ret = lessonService.getLessonDtoById(id);
