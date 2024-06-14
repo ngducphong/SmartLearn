@@ -47,6 +47,8 @@ public class CourseServiceImpl implements CourseService {
     UserCourseRepository userCourseRepository;
     @Autowired
     ChapterRepository chapterRepository;
+    @Autowired
+    UserRepository userRepository;
 
     @Value("${course.file.path.img}")
     private String filePath;
@@ -218,6 +220,10 @@ public class CourseServiceImpl implements CourseService {
         Users users = iUserService.getCurrentUser();
         // get list courseId by userId
         List<Long> courseIds = userCourseRepository.getListCourseIdByUsersId(users.getId());
-        return courseIds.contains(courseId);
+        List<String> nameRoles = userRepository.getNameRolesByUserId(users.getId());
+        if(courseIds.contains(courseId) || nameRoles.contains(RoleName.ROLE_ADMIN) || nameRoles.contains(RoleName.ROLE_SUBADMIN) ){
+            return true;
+        }
+        return false;
     }
 }
