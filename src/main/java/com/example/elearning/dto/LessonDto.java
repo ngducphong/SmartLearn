@@ -46,6 +46,7 @@ public class LessonDto  extends BaseObjectDto {
         }
         if(entity.getChapter() != null){
 //            this.chapterDto = new ChapterDto(entity.getChapter());
+
             this.chapterId = entity.getChapter().getId();
         }
     }
