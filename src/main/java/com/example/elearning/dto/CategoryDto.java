@@ -15,7 +15,6 @@ public class CategoryDto extends BaseObjectDto {
     private String name;
     private String description;
     private List<CourseDto> courses = new ArrayList<>();
-
     public CategoryDto() {
     }
     public CategoryDto(Category entity) {
