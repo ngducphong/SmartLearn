@@ -21,9 +21,17 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
 
     @Query("select new com.example.elearning.dto.CommentDto(e, true) from Comment e" +
             " where  ( e.comment is null )")
-    Page<CommentDto> getCommentParentPage(Pageable pageable);
+    List<CommentDto> getCommentParent();
 
     @Query("select new com.example.elearning.dto.CommentDto(e, true) from Comment e" +
-            " where  ( :parentId is null or e.comment.id = :parentId ) ")
-    Page<CommentDto> getCommentChildrenByParentId(Pageable pageable, Long parentId);
+            " where  ( :parentId is null or e.comment.id = :parentId )  order by e.createDate desc")
+    List<CommentDto> getCommentChildrenByParentId( Long parentId);
+
+    @Query("select new com.example.elearning.dto.CommentDto(e, true) from Comment e" +
+            " where  (  e.lesson.id = :lessonId ) and e.comment is null order by e.createDate desc ")
+    List<CommentDto> listCommentByLesson( Long lessonId);
+
+    @Query("select count(e.id) from Comment e" +
+            " where  e.comment.id = :commentId ")
+    Long countCommentByParentId( Long commentId);
 }

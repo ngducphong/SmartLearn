@@ -91,4 +91,10 @@ public class CourseController {
         Page<CourseDto> ret = courseService.pagingCourseFavourite(pageable);
         return ResponseEntity.ok(ret);
     }
+
+    @GetMapping("/check-register-course/{id}")
+    public ResponseEntity<Boolean> checkRegisterCourse(@PathVariable("id") Long id) {
+        Boolean ret = courseService.checkRegisterCourse(id);
+        return ResponseEntity.ok(ret);
+    }
 }

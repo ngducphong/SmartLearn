@@ -14,6 +14,7 @@ import java.util.Set;
 @Setter
 @Builder
 public class Comment extends BaseObject {
+	@Column(columnDefinition="LONGTEXT")
 	private String content;
 	@ManyToOne
 	@JoinColumn(name = "user_id")

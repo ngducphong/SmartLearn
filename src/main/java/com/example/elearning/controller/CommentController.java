@@ -55,15 +55,19 @@ public class CommentController {
     }
 
     @GetMapping("/paging-comment-parent")
-    public ResponseEntity<Page<CommentDto>> pagingCommentParent(@PageableDefault(page = 0, size = 2,sort = "id",direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<CommentDto> ret = commentService.pagingCommentParent(pageable);
+    public ResponseEntity<List<CommentDto>> pagingCommentParent() {
+        List<CommentDto> ret = commentService.pagingCommentParent();
         return ResponseEntity.ok(ret);
     }
 
     @GetMapping("/paging-comment-children")
-    public ResponseEntity<Page<CommentDto>> pagingCommentChildrenByParentId(@PageableDefault(page = 0, size = 2) Pageable pageable
-            , @RequestParam Long parentId) {
-        Page<CommentDto> ret = commentService.pagingCommentChildrenByParentId(pageable, parentId);
+    public ResponseEntity<List<CommentDto>> pagingCommentChildrenByParentId(@RequestParam Long parentId) {
+        List<CommentDto> ret = commentService.pagingCommentChildrenByParentId( parentId);
+        return ResponseEntity.ok(ret);
+    }
+    @GetMapping("/list-comment-by-lesson/{lessonId}")
+    public ResponseEntity<List<CommentDto>> listCommentByLesson(@PathVariable("lessonId") Long lessonId) {
+        List<CommentDto> ret = commentService.listCommentByLesson( lessonId);
         return ResponseEntity.ok(ret);
     }
 }

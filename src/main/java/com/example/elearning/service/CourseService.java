@@ -29,5 +29,6 @@ public interface CourseService {
     Page<CourseDto> pagingCourseFavourite(Pageable pageable);
 
     Page<CourseDto> getAllMyCourseDto(Pageable pageable, String title) throws CustomException;
+    Boolean checkRegisterCourse(Long courseId);
 
 }

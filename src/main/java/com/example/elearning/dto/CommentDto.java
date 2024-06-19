@@ -14,6 +14,7 @@ public class CommentDto extends BaseObjectDto {
     private Long lessonId;
     private CommentDto comment;
     private Long parentId;
+    private Long totalCommentChild;
 
     public CommentDto() {
     }

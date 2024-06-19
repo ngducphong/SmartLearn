@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -55,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         entity = commentRepository.save(entity);
-        return new CommentDto(entity);
+        return new CommentDto(entity, true);
     }
 
     @Override
@@ -106,15 +107,27 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Page<CommentDto> pagingCommentParent(Pageable pageable) {
-        Page<CommentDto> page = commentRepository.getCommentParentPage(pageable);
+    public List<CommentDto> pagingCommentParent() {
+        List<CommentDto> list = commentRepository.getCommentParent();
+        return list;
+    }
+
+    @Override
+    public List<CommentDto> pagingCommentChildrenByParentId(Long parentId) {
+        List<CommentDto> page = commentRepository.getCommentChildrenByParentId( parentId);
         return page;
     }
 
     @Override
-    public Page<CommentDto> pagingCommentChildrenByParentId(Pageable pageable, Long parentId) {
-        Page<CommentDto> page = commentRepository.getCommentChildrenByParentId(pageable, parentId);
-        return page;
+    public List<CommentDto> listCommentByLesson(Long lessonId) {
+        List<CommentDto> listComment = commentRepository.listCommentByLesson(lessonId).stream()
+                .map(item -> {
+                    Long totalComment = commentRepository.countCommentByParentId(item.getId());
+                    item.setTotalCommentChild(totalComment); // Giả sử setTotalCommentChild thay đổi đối tượng hiện tại
+                    return item;
+                })
+                .collect(Collectors.toList());
+        return listComment;
     }
 
 }

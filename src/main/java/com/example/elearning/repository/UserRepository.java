@@ -1,5 +1,6 @@
 package com.example.elearning.repository;
 
+import com.example.elearning.constant.RoleName;
 import com.example.elearning.model.Course;
 import com.example.elearning.model.Users;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -29,7 +31,7 @@ public interface UserRepository extends JpaRepository<Users,Long> {
 
 
     @Query("select  u from Users u " +
-            "WHERE (LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%')) OR :name = '' OR :name is null ) " +
+                "WHERE (LOWER(u.fullName) LIKE LOWER(CONCAT('%', :name, '%')) OR :name = '' OR :name is null ) " +
             "AND (u.phone = :phone OR :phone = '' or :phone is null) " +
             "AND (u.username = :username OR :username = '' or :username is null) " +
             "AND (u.email = :email OR :email = '' or :email is null) " +
@@ -39,10 +41,7 @@ public interface UserRepository extends JpaRepository<Users,Long> {
 //    @Query("select u.favourite from Users u where u.id = :userId")
 //    Page<Course> getWistListByUserId(Long userId, Pageable pageable);
 
-        @Query("select r.roleName from user_role u, roles r " +
-            "WHERE r.id = u.role_id " +
-            "AND (u.user_id = :userId) " +
-            "")
-        List<String> getNameRolesByUserId(Long userId);
+        @Query(value = "select r.role_name from user_role u, roles r WHERE r.id = u.role_id AND (u.user_id = :userId) ", nativeQuery = true)
+        List<Byte> getNameRolesByUserId(Long userId);
 
 }

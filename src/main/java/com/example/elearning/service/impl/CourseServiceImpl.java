@@ -1,6 +1,7 @@
 package com.example.elearning.service.impl;
 
 
+import com.example.elearning.constant.RoleName;
 import com.example.elearning.dto.CourseDto;
 import com.example.elearning.exception.CustomException;
 import com.example.elearning.model.Category;
@@ -30,10 +31,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -149,9 +149,6 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private Course getCourseById(Long id) throws CustomException {
-        if(!this.checkRegisterCourse(id)){
-            throw new CustomException("The course has not been registered");
-        }
         Optional<Course> optional = courseRepository.findById(id);
         if (optional.isPresent()) {
             return optional.get();
@@ -216,12 +213,24 @@ public class CourseServiceImpl implements CourseService {
         }
         return courseRepository.getCourseByUser(pageable, users.getId(), title);
     }
-    private Boolean checkRegisterCourse(Long courseId) {
+
+    @Override
+    public Boolean checkRegisterCourse(Long courseId) {
         Users users = iUserService.getCurrentUser();
         // get list courseId by userId
         List<Long> courseIds = userCourseRepository.getListCourseIdByUsersId(users.getId());
-        List<String> nameRoles = userRepository.getNameRolesByUserId(users.getId());
-        if(courseIds.contains(courseId) || nameRoles.contains(RoleName.ROLE_ADMIN) || nameRoles.contains(RoleName.ROLE_SUBADMIN) ){
+        List<Byte> nameRoles = userRepository.getNameRolesByUserId(users.getId());
+
+        Map<Byte, RoleName> mapRoles = new HashMap<>();
+        mapRoles.put((byte) 0, RoleName.ROLE_ADMIN);
+        mapRoles.put((byte) 1, RoleName.ROLE_SUBADMIN);
+        mapRoles.put((byte) 2, RoleName.ROLE_USER);
+
+        Set<RoleName> userRoles = nameRoles.stream()
+                .map(mapRoles::get)
+                .collect(Collectors.toSet());
+
+        if(courseIds.contains(courseId) || userRoles.contains(RoleName.ROLE_ADMIN) || userRoles.contains(RoleName.ROLE_SUBADMIN) ){
             return true;
         }
         return false;
