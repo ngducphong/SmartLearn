@@ -30,5 +30,7 @@ public interface CourseService {
 
     Page<CourseDto> getAllMyCourseDto(Pageable pageable, String title) throws CustomException;
     Boolean checkRegisterCourse(Long courseId);
+    List<CourseDto> recommendCourseDtoById(Long id, Long number);
+    List<CourseDto> recommendCourseByMyCourse() throws CustomException;
 
 }

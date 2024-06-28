@@ -97,4 +97,17 @@ public class CourseController {
         Boolean ret = courseService.checkRegisterCourse(id);
         return ResponseEntity.ok(ret);
     }
+
+    @GetMapping("/recommend-course-by-id")
+    public ResponseEntity<List<CourseDto>> recommendCourseDtoById(@RequestParam(required = false) Long id, @RequestParam(required = false, defaultValue = "6") Long number) {
+        List<CourseDto> ret = courseService.recommendCourseDtoById(id, number);
+        return ResponseEntity.ok(ret);
+    }
+
+    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @GetMapping("/recommend-course-by-my-course")
+    public ResponseEntity<List<CourseDto>> recommendCourseByMyCourse() throws CustomException {
+        List<CourseDto> ret = courseService.recommendCourseByMyCourse();
+        return ResponseEntity.ok(ret);
+    }
 }

@@ -16,6 +16,7 @@ import com.example.elearning.utills.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,6 +35,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpHeaders;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -234,5 +244,61 @@ public class CourseServiceImpl implements CourseService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public List<CourseDto> recommendCourseDtoById(Long id, Long number){
+        List<CourseDto> listCourseDto = new ArrayList<>();
+        String apiUrl = "http://localhost:9999/api?id=" + id + "&number=" + number; // Thay đổi ID nếu cần
+
+        try {
+            // Tạo HttpClient
+            HttpClient client = HttpClient.newHttpClient();
+
+            // Tạo HttpRequest với HttpHeaders
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(apiUrl))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+
+            // Gửi yêu cầu và nhận phản hồi
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            // In ra mã trạng thái của phản hồi
+            System.out.println("Response code: " + response.statusCode());
+
+            // Xử lý phản hồi JSON
+            if (response.statusCode() == 200) {
+                JSONObject jsonResponse = new JSONObject(response.body());
+                JSONArray dataArray = jsonResponse.getJSONArray("data");
+
+                for (int i = 0; i < dataArray.length(); i++) {
+                    listCourseDto.add(this.getCourseDtoById((long) dataArray.getInt(i)));
+                }
+            } else {
+                System.out.println("Error: " + response.body());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listCourseDto;
+    }
+
+    @Override
+    public List<CourseDto> recommendCourseByMyCourse() throws CustomException {
+        Set<CourseDto> recommendCourses = new HashSet<>();
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
+        Page<CourseDto> myCoursePage = this.getAllMyCourseDto(pageable, null);
+        List<CourseDto> myCourse = myCoursePage.getContent();
+
+        myCourse.forEach(item -> {
+            recommendCourses.addAll(this.recommendCourseDtoById(item.getId(), 3L));
+        });
+
+        // Chuyển đổi Set<CourseDto> thành List<CourseDto>
+        List<CourseDto> recommendedCourseList = new ArrayList<>(recommendCourses);
+        return recommendedCourseList;
     }
 }
