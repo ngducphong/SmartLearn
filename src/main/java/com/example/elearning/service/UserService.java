@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
+import java.util.Map;
 
 public interface UserService {
     void registerUser(UserInfoRequest userInfoRequest) throws CustomException;
@@ -32,5 +33,8 @@ public interface UserService {
     boolean changeStatusActiveUser(Long id) throws CustomException;
 
     void resetPassword(ResetPasswordRequest request) throws CustomException, IOException, ApiException;
+
+    Map<Integer, Long> getUserAccountRegistrationData(Integer year);
+    Map<Integer, Double> getPaymentChartData(Integer year);
 
 }

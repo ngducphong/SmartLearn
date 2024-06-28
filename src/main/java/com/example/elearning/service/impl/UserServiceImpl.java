@@ -23,6 +23,8 @@ import com.infobip.BaseUrl;
 //import com.twilio.rest.api.v2010.account.Message;
 import jakarta.annotation.Resource;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -43,6 +45,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +66,9 @@ public class UserServiceImpl implements UserService {
     private JwtProvider jwtProvider;
     @Resource
     private JavaMailSender mailSender;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     @Value("${infobip.apiKey}")
@@ -303,6 +309,66 @@ public class UserServiceImpl implements UserService {
         System.out.println("Send reset password by phone");
         return;
     }
+
+    @Override
+    public Map<Integer, Long> getUserAccountRegistrationData(Integer year){
+        Map<Integer, Long> mapMonthData = new HashMap<>();
+        for(int i = 1; i <= 12; i++){
+            mapMonthData.put(i, 0L);
+        }
+
+        // Query to get the count of registrations per month for the given year
+        List<Object[]> results = entityManager.createQuery(
+                        "SELECT FUNCTION('MONTH', e.createDate), COUNT(e.id) " +
+                                "FROM Users e " +
+                                "WHERE FUNCTION('YEAR', e.createDate) = :year " +
+                                "GROUP BY FUNCTION('MONTH', e.createDate)", Object[].class)
+                .setParameter("year", year)
+                .getResultList();
+
+        // Update the map with actual data from the query
+        for (Object[] result : results) {
+            Integer month = (Integer) result[0];
+            Long count = (Long) result[1];
+            mapMonthData.put(month, count);
+        }
+
+        return mapMonthData;
+    }
+
+    @Override
+    public Map<Integer, Double> getPaymentChartData(Integer year) {
+        Map<Integer, Double> mapMonthData = new HashMap<>();
+        for (int i = 1; i <= 12; i++) {
+            mapMonthData.put(i, 0D);
+        }
+
+        try {
+            // Query to get the sum of payments per month for the given year
+            List<Object[]> results = entityManager.createQuery(
+                            "SELECT FUNCTION('MONTH', e.createDate), sum(e.vnp_Amount) " +
+                                    "FROM PaymentInFo  e " +
+                                    "WHERE FUNCTION('YEAR', e.createDate) = :year " +
+                                    "GROUP BY FUNCTION('MONTH', e.createDate)", Object[].class)
+                    .setParameter("year", year)
+                    .getResultList();
+
+            // Update the map with actual data from the query
+            for (Object[] result : results) {
+                Integer month = (Integer) result[0];
+                BigDecimal amount = (BigDecimal) result[1];
+                mapMonthData.put(month, amount.doubleValue());
+            }
+        } catch (Exception e) {
+            // Handle exceptions if necessary
+            e.printStackTrace();
+            // You might want to throw or handle the exception appropriately
+        }
+
+        return mapMonthData;
+    }
+
+
 
     protected void senMailResetPassword(String password, Users user) throws CustomException {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();

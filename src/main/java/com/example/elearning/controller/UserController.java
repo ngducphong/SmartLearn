@@ -8,6 +8,7 @@ import com.example.elearning.dto.response.UserResponse;
 import com.example.elearning.exception.CustomException;
 import com.example.elearning.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -81,5 +84,15 @@ public class UserController {
         return new ResponseEntity<>(userService.changeStatusActiveUser(id), HttpStatus.OK);
     }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/get-user-account-registration-data")
+    ResponseEntity<Map<Integer, Long>> getUserAccountRegistrationData(@RequestParam(value = "year", required = false, defaultValue = "2024") Integer year) {
+        return new ResponseEntity<>(userService.getUserAccountRegistrationData(year), HttpStatus.OK);
+    }
 
+    @Secured("ROLE_ADMIN")
+    @GetMapping("/get-payment-chart-data")
+    ResponseEntity<Map<Integer, Double>> getPaymentChartData(@RequestParam(value = "year", required = false, defaultValue = "2024") Integer year) {
+        return new ResponseEntity<>(userService.getPaymentChartData(year), HttpStatus.OK);
+    }
 }
