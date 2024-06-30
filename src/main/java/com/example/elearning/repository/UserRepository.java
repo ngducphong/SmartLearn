@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,8 +36,10 @@ public interface UserRepository extends JpaRepository<Users,Long> {
             "AND (u.phone = :phone OR :phone = '' or :phone is null) " +
             "AND (u.username = :username OR :username = '' or :username is null) " +
             "AND (u.email = :email OR :email = '' or :email is null) " +
+            "AND (u.voided = :voided  or :voided is null) " +
+            "AND (DATE(u.createDate) = DATE(:createDate) OR  :createDate is null) " +
             "")
-    Page<Users> findUsersByFullNameAndPhone(String name, String username, String email, String phone, Pageable pageable);
+    Page<Users> findUsersByFullNameAndPhone(String name, String username, String email, String phone, Pageable pageable, Date createDate, Boolean voided);
 
 //    @Query("select u.favourite from Users u where u.id = :userId")
 //    Page<Course> getWistListByUserId(Long userId, Pageable pageable);

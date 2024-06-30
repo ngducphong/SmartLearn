@@ -14,6 +14,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/api/v1/course")
@@ -44,7 +46,7 @@ public class CourseController {
         courseService.deleteCourse(id);
     }
 
-    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_SUBADMIN", "ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/get-all")
     public ResponseEntity<List<CourseDto>> getAll() {
         List<CourseDto> ret = courseService.getAllCourse();
@@ -52,13 +54,24 @@ public class CourseController {
     }
 
     @GetMapping("/paging")
-    public ResponseEntity<Page<CourseDto>> paging(@RequestParam(required = false)String home,@PageableDefault(page = 0, size = 20,sort = "id",direction = Sort.Direction.DESC) Pageable pageable
-            , @RequestParam(required = false) String title) {
-        Page<CourseDto> ret = courseService.pagingCourseDto(pageable, title, home);
+    public ResponseEntity<Page<CourseDto>> paging(@RequestParam(required = false) String home, @PageableDefault(page = 0, size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+            , @RequestParam(required = false) String title
+            , @RequestParam(required = false) String price
+            , @RequestParam(required = false) String createDate
+            , @RequestParam(required = false) Boolean voided
+            , @RequestParam(required = false) List<String> courses
+    ) throws ParseException {
+        List<Long> courseIds = new ArrayList<>();
+        if (courses != null) {
+            courses.forEach(item -> {
+                courseIds.add(Long.valueOf(item));
+            });
+        }
+        Page<CourseDto> ret = courseService.pagingCourseDto(pageable, title, home, price, createDate, voided, courseIds);
         return ResponseEntity.ok(ret);
     }
 
-    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_SUBADMIN", "ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/{id}")
     public ResponseEntity<CourseDto> get(@PathVariable("id") Long id) throws CustomException {
         CourseDto ret = courseService.getCourseDtoById(id);
@@ -66,7 +79,7 @@ public class CourseController {
 
     }
 
-    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_SUBADMIN", "ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/getFullCourse/{id}")
     public ResponseEntity<CourseDto> getFullCourse(@PathVariable("id") Long id) throws CustomException {
         CourseDto ret = courseService.getFullCourse(id);
@@ -74,12 +87,23 @@ public class CourseController {
 
     }
 
-    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_SUBADMIN", "ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/get-my-course")
-    public ResponseEntity<Page<CourseDto>> getAllMyCourseDto(@PageableDefault(page = 0, size = 20) Pageable pageable, @RequestParam(required = false) String title) throws CustomException {
-        Page<CourseDto> ret = courseService.getAllMyCourseDto(pageable, title);
+    public ResponseEntity<Page<CourseDto>> getAllMyCourseDto(@PageableDefault(page = 0, size = 20) Pageable pageable,
+                                                             @RequestParam(required = false) String title,
+                                                             @RequestParam(required = false) String price,
+                                                             @RequestParam(required = false) List<String> courses
+    ) throws CustomException {
+        List<Long> courseIds = new ArrayList<>();
+        if (courses != null) {
+            courses.forEach(item -> {
+                courseIds.add(Long.valueOf(item));
+            });
+        }
+        Page<CourseDto> ret = courseService.getAllMyCourseDto(pageable, title, courseIds, price);
         return ResponseEntity.ok(ret);
     }
+
     @GetMapping("/paging-course-most-registered")
     public ResponseEntity<Page<CourseDto>> pagingCourseMostRegistered(@PageableDefault(page = 0, size = 20) Pageable pageable) {
         Page<CourseDto> ret = courseService.pagingCourseMostRegistered(pageable);
@@ -104,7 +128,7 @@ public class CourseController {
         return ResponseEntity.ok(ret);
     }
 
-    @Secured({"ROLE_SUBADMIN","ROLE_USER", "ROLE_ADMIN"})
+    @Secured({"ROLE_SUBADMIN", "ROLE_USER", "ROLE_ADMIN"})
     @GetMapping("/recommend-course-by-my-course")
     public ResponseEntity<List<CourseDto>> recommendCourseByMyCourse() throws CustomException {
         List<CourseDto> ret = courseService.recommendCourseByMyCourse();

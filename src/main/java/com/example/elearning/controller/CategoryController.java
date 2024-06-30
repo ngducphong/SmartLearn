@@ -14,6 +14,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @RequestMapping("/api/v1/category")
@@ -48,9 +49,12 @@ public class CategoryController {
     }
 
     @GetMapping("/paging")
-    public ResponseEntity<Page<CategoryDto>> paging(@PageableDefault(page = 0, size = 2,sort = "id",direction = Sort.Direction.DESC) Pageable pageable
-            , @RequestParam(required = false) String name) {
-        Page<CategoryDto> ret = categoryService.pagingCategoryDto(pageable, name);
+    public ResponseEntity<Page<CategoryDto>> paging(@PageableDefault(page = 0, size = 3,sort = "id",direction = Sort.Direction.DESC) Pageable pageable
+            , @RequestParam(required = false) String name
+            , @RequestParam(required = false) String createDate
+            , @RequestParam(required = false) Boolean voided
+    ) throws ParseException {
+        Page<CategoryDto> ret = categoryService.pagingCategoryDto(pageable, name, createDate, voided);
         return ResponseEntity.ok(ret);
     }
 

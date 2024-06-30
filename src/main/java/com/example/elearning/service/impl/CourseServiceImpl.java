@@ -28,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.Normalizer;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,9 +42,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpHeaders;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 
 
 @Service
@@ -167,14 +169,25 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public Page<CourseDto> pagingCourseDto(Pageable pageable, String title, String home) {
+    public Page<CourseDto> pagingCourseDto(Pageable pageable, String title, String home, String price, String createDate, Boolean voided, List<Long> courseIds) throws ParseException {
+        Double priceFrom = 0D;
+        Double priceTo = Double.MAX_VALUE;
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date searchDate = Objects.equals(createDate, "") || createDate == null ? null : formatter.parse(createDate);
+        if (price != null && !price.isEmpty()) {
+            String[] parts = price.split("-");
+            String part1 = parts[0];
+            String part2 = parts[1];
+            priceFrom = Double.valueOf(part1);
+            priceTo = Double.valueOf(part2);
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!(authentication instanceof AnonymousAuthenticationToken)) {
             UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            Page<Object[]> results = courseRepository.getCoursePageLogIn(pageable, title, userPrincipal.getId());
+            Page<Object[]> results = courseRepository.getCoursePageLogIn(pageable, title, userPrincipal.getId(), priceFrom, priceTo, searchDate, voided, courseIds);
             return results.map(result -> convertToCourseDto(result, false, true));
         }
-        Page<CourseDto> page = courseRepository.getCoursePage(pageable, title, home);
+        Page<CourseDto> page = courseRepository.getCoursePage(pageable, title, home, searchDate, priceFrom, priceTo, voided, courseIds);
         return page;
     }
 
@@ -216,6 +229,26 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Page<CourseDto> getAllMyCourseDto(Pageable pageable, String title, List<Long> courseIds, String price) throws CustomException {
+        Double priceFrom = 0D;
+        Double priceTo = Double.MAX_VALUE;
+
+        if (price != null && !price.isEmpty()) {
+            String[] parts = price.split("-");
+            String part1 = parts[0];
+            String part2 = parts[1];
+            priceFrom = Double.valueOf(part1);
+            priceTo = Double.valueOf(part2);
+        }
+
+        Users users = iUserService.getCurrentUser();
+        if (users == null || users.getId() == null) {
+            throw new CustomException("User not found");
+        }
+        return courseRepository.getCourseByUser(pageable, users.getId(), title, !courseIds.isEmpty() ? courseIds : null, priceFrom, priceTo);
+    }
+
+
     public Page<CourseDto> getAllMyCourseDto(Pageable pageable, String title) throws CustomException {
         Users users = iUserService.getCurrentUser();
         if (users == null || users.getId() == null) {
@@ -240,14 +273,14 @@ public class CourseServiceImpl implements CourseService {
                 .map(mapRoles::get)
                 .collect(Collectors.toSet());
 
-        if(courseIds.contains(courseId) || userRoles.contains(RoleName.ROLE_ADMIN) || userRoles.contains(RoleName.ROLE_SUBADMIN) ){
+        if (courseIds.contains(courseId) || userRoles.contains(RoleName.ROLE_ADMIN) || userRoles.contains(RoleName.ROLE_SUBADMIN)) {
             return true;
         }
         return false;
     }
 
     @Override
-    public List<CourseDto> recommendCourseDtoById(Long id, Long number){
+    public List<CourseDto> recommendCourseDtoById(Long id, Long number) {
         List<CourseDto> listCourseDto = new ArrayList<>();
         String apiUrl = "http://localhost:9999/api?id=" + id + "&number=" + number; // Thay đổi ID nếu cần
 

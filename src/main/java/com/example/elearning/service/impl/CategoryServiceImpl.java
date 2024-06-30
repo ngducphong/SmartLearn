@@ -15,7 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -74,8 +77,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Page<CategoryDto> pagingCategoryDto(Pageable pageable, String name) {
-        Page<CategoryDto> page = categoryRepository.getCategoryPage(pageable, name);
+    public Page<CategoryDto> pagingCategoryDto(Pageable pageable, String name, String createDate, Boolean voided) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Page<CategoryDto> page = categoryRepository.getCategoryPage(pageable, name, Objects.equals(createDate, "") || createDate == null ? null : formatter.parse(createDate), voided);
         return page;
     }
 

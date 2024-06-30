@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -16,6 +17,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<CategoryDto> getAll();
 
     @Query("select new com.example.elearning.dto.CategoryDto(e, true) from Category e"
-            + " Where  ( :name is null or  e.name like concat('%',:name,'%'))")
-    Page<CategoryDto> getCategoryPage(Pageable pageable, String name);
+            + " Where  ( :name is null or  e.name like concat('%',:name,'%')) " +
+            " AND (e.voided = :voided  or :voided is null) " +
+            " AND (DATE(e.createDate) = DATE(:createDate) OR  :createDate is null) " +
+            "")
+    Page<CategoryDto> getCategoryPage(Pageable pageable, String name, Date createDate, Boolean voided);
 }

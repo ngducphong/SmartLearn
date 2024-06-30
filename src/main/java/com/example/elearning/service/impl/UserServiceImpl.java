@@ -46,6 +46,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -225,8 +227,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> findAll(String name, String username, String email, String phone, Pageable pageable) {
-        Page<Users> users = userRepository.findUsersByFullNameAndPhone(name, username, email, phone, pageable);
+    public Page<UserResponse> findAll(String name, String username, String email, String phone, Pageable pageable, String createDate, Boolean voided, String role) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Page<Users> users = userRepository.findUsersByFullNameAndPhone(name, username, email, phone, pageable,
+                Objects.equals(createDate, "") || createDate == null ? null : formatter.parse(createDate), voided);
         return users.map(UserResponse::new);
     }
 
@@ -311,9 +315,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<Integer, Long> getUserAccountRegistrationData(Integer year){
+    public Map<Integer, Long> getUserAccountRegistrationData(Integer year) {
         Map<Integer, Long> mapMonthData = new HashMap<>();
-        for(int i = 1; i <= 12; i++){
+        for (int i = 1; i <= 12; i++) {
             mapMonthData.put(i, 0L);
         }
 
@@ -367,7 +371,6 @@ public class UserServiceImpl implements UserService {
 
         return mapMonthData;
     }
-
 
 
     protected void senMailResetPassword(String password, Users user) throws CustomException {

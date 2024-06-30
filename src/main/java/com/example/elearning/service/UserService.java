@@ -11,13 +11,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Map;
 
 public interface UserService {
     void registerUser(UserInfoRequest userInfoRequest) throws CustomException;
+
     void registerSubAdmin(UserInfoRequest request) throws CustomException;
+
     UserResponse createUser(UserInfoRequest request) throws CustomException;
+
     JwtResponse login(UserLogin userLogin) throws CustomException;
+
     String handleLogout(Authentication authentication);
 
     void editInfoUser(EditUserRequest editUserRequest) throws CustomException;
@@ -26,7 +31,7 @@ public interface UserService {
 
     void editUser(EditUserRequest editUserRequest, Long id) throws CustomException;
 
-    Page<UserResponse> findAll(String name, String username, String email, String phone, Pageable pageable);
+    Page<UserResponse> findAll(String name, String username, String email, String phone, Pageable pageable, String createDate, Boolean voided, String role) throws ParseException;
 
     Users getCurrentUser();
 
@@ -35,6 +40,7 @@ public interface UserService {
     void resetPassword(ResetPasswordRequest request) throws CustomException, IOException, ApiException;
 
     Map<Integer, Long> getUserAccountRegistrationData(Integer year);
+
     Map<Integer, Double> getPaymentChartData(Integer year);
 
 }
